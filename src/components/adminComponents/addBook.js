@@ -1,5 +1,5 @@
 // src/components/AddBook.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { db } from '../../firebase/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
@@ -15,14 +15,6 @@ const AddBook = () => {
     const [location, setLocation] = useState('');
     const [rating, setRating] = useState(1); // Default rating
     const navigate = useNavigate(); // Navigate back after adding
-
-    // Check if the user is an admin
-    useEffect(() => {
-        const role = localStorage.getItem("userRole");
-        if (role || role !== "admin") {
-            navigate("/login"); // Redirect if not an admin
-        }
-    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

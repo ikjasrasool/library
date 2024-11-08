@@ -9,14 +9,12 @@ const UpdateBook = () => {
     const [genre, setGenre] = useState('');
     const [photoURL, setPhotoURL] = useState('');
     const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('Available'); // Default status
-    const [noOfBooks, setNoOfBooks] = useState(1); // Default number of books
+    const [status, setStatus] = useState('Available');
+    const [noOfBooks, setNoOfBooks] = useState(1);
     const [location, setLocation] = useState('');
-    const [rating, setRating] = useState(1); // Default rating
-    const { id } = useParams(); // Get the book ID from the URL
-    const navigate = useNavigate(); // Hook for programmatic navigation
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-    // Fetch book details when the component mounts
     useEffect(() => {
         const fetchBookDetails = async () => {
             const bookRef = doc(db, 'books', id);
@@ -27,27 +25,18 @@ const UpdateBook = () => {
                 setAuthor(bookData.author);
                 setGenre(bookData.genre);
                 setPhotoURL(bookData.photoURL);
-                setDescription(bookData.description || ''); // Ensure description is set
-                setStatus(bookData.status || 'Available'); // Ensure status is set
-                setNoOfBooks(bookData.noOfBooks || 1); // Ensure number of books is set
-                setLocation(bookData.location || ''); // Ensure location is set
-                setRating(bookData.rating || 1); // Ensure rating is set
+                setDescription(bookData.description || '');
+                setStatus(bookData.status || 'Available');
+                setNoOfBooks(bookData.noOfBooks || 1);
+                setLocation(bookData.location || '');
             } else {
                 console.error("No such document!");
-                navigate('/home'); // Redirect if not found
+                navigate('/home');
             }
         };
-
-        // Check for admin role
-        const role = localStorage.getItem("userRole");
-        if (role || role !== "admin") {
-            navigate("/login"); // Redirect if not an admin
-        } else {
-            fetchBookDetails(); // Fetch details only if admin
-        }
+        fetchBookDetails();
     }, [id, navigate]);
 
-    // Handle form submission to update the book
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
@@ -60,11 +49,10 @@ const UpdateBook = () => {
                 description,
                 status,
                 noOfBooks,
-                location,
-                rating // Include rating in the update
+                location
             });
             alert("Book updated successfully!");
-            navigate("/home"); // Redirect to Home after updating
+            navigate("/home");
         } catch (error) {
             console.error("Error updating book:", error);
             alert("Error updating book, please try again.");
@@ -131,7 +119,11 @@ const UpdateBook = () => {
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Status</label>
-                                <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+                                <select
+                                    className="form-select"
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                >
                                     <option value="Available">Available</option>
                                     <option value="Not Available">Not Available</option>
                                 </select>

@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { db } from '../../firebase/firebase'; // Ensure you have Firebase configured
+import { db } from '../../firebase/firebase'; // Ensure Firebase is configured
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth'; // Import Firebase Auth
 
 const BookDetail = () => {
     const { id } = useParams(); // Get the book ID from the URL
     const [book, setBook] = useState(null); // Initialize book state
     const [reviews, setReviews] = useState([]); // Initialize reviews state
     const [loading, setLoading] = useState(true); // Track loading state
-    const [user, setUser] = useState(null); // Initialize user state
     const [averageRating, setAverageRating] = useState(0); // Initialize average rating state
     const navigate = useNavigate(); // Navigate for redirecting
 
@@ -44,22 +42,6 @@ const BookDetail = () => {
         };
 
         fetchBook();
-
-        // Fetch current user
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            setUser({
-                uid: currentUser.uid,
-                name: currentUser.email || 'user', // Changed displayName to name
-            });
-        }
-
-        // Check for admin role
-        const role = localStorage.getItem("userRole");
-        if (role || role !== "admin") {
-            navigate("/login"); // Redirect if not an admin
-        }
     }, [id, navigate]); // Fetch book and reviews when the component mounts or ID changes
 
     const renderStars = (rating) => {
@@ -91,7 +73,7 @@ const BookDetail = () => {
                     <p><strong>Location:</strong> {book.location}</p>
                     <p><strong>Average Rating:</strong> {renderStars(averageRating)} ({averageRating})</p> {/* Displaying the average rating */}
                     <div className="d-flex justify-content-between align-items-center">
-                        <Link to="/student-home" className="btn btn-secondary">Back to Home</Link>
+                        <Link to="/home" className="btn btn-secondary">Back to Home</Link>
                         <Link to={`/update/${book.id}`} className="btn btn-primary">Update</Link>
                     </div>
                 </div>

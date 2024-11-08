@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../firebase/firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import { Link, useNavigate } from 'react-router-dom';
-import { auth } from "../../firebase/firebase"; // Import Firebase auth for logout
-import { signOut } from "firebase/auth"; // Import signOut function
+import { Link } from 'react-router-dom';
 
 const BooksList = () => {
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); // State for search term
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -19,22 +16,7 @@ const BooksList = () => {
         };
 
         fetchBooks();
-
-        // Check for admin role
-        const role = localStorage.getItem("userRole");
-        if (role || role !== "admin") {
-            navigate("/login"); // Redirect if not an admin
-        }
-    }, [navigate]); // Check the role when the component mounts
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate("/login");
-        } catch (error) {
-            console.error("Error during logout:", error);
-        }
-    };
+    }, []);
 
     // Filter books based on the search term
     const filteredBooks = books.filter(book =>
@@ -57,9 +39,6 @@ const BooksList = () => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/delete">Delete</Link>
-                            </li>
-                            <li className="nav-item">
-                                <button className="nav-link btn" onClick={handleLogout}>Logout</button>
                             </li>
                         </ul>
                     </div>

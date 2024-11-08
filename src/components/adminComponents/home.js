@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase/firebase";
-import { signOut } from "firebase/auth";
 import { db } from '../../firebase/firebase';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import PopularBooks from "../homenew";
@@ -11,18 +9,8 @@ const Home = () => {
     const navigate = useNavigate();
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [userRole, setUserRole] = useState("");
 
     useEffect(() => {
-        // Check user role
-        const role = localStorage.getItem("userRole");
-        if (!role || role !== "admin") {
-            // Redirect to login or another page if not admin
-            navigate("/login");
-            return;
-        }
-        setUserRole(role);
-
         const fetchBooks = async () => {
             const booksCollection = collection(db, 'books');
             const booksSnapshot = await getDocs(booksCollection);
@@ -31,17 +19,7 @@ const Home = () => {
         };
 
         fetchBooks();
-    }, [navigate]);
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            localStorage.removeItem("userRole"); // Clear the user role on logout
-            navigate("/login");
-        } catch (error) {
-            console.error("Error during logout:", error);
-        }
-    };
+    }, []);
 
     const handleDelete = async (id) => {
         try {
@@ -90,9 +68,6 @@ const Home = () => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/delete">Delete</Link>
-                            </li>
-                            <li className="nav-item">
-                                <button className="nav-link btn" onClick={handleLogout}>Logout</button>
                             </li>
                         </ul>
                     </div>

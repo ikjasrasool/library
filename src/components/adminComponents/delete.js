@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../../firebase/firebase'; // Import your Firebase Firestore instance
+import { db } from '../../firebase/firebase'; // Import Firebase Firestore instance
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../../firebase/firebase';
-import { signOut } from 'firebase/auth';
+import { Link } from 'react-router-dom';
 
 const Delete = () => {
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -19,13 +16,7 @@ const Delete = () => {
         };
 
         fetchBooks();
-
-        // Check for admin role
-        const role = localStorage.getItem("userRole");
-        if (role || role !== "admin") {
-            navigate("/login"); // Redirect if not an admin
-        }
-    }, [navigate]); // Check the role when the component mounts
+    }, []);
 
     const handleDelete = async (id) => {
         try {
@@ -34,16 +25,6 @@ const Delete = () => {
         } catch (error) {
             console.error("Error deleting book:", error);
             alert("Error deleting book, please try again.");
-        }
-    };
-
-    // Handle logout
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            navigate("/login");
-        } catch (error) {
-            console.error("Error during logout:", error);
         }
     };
 
@@ -68,9 +49,6 @@ const Delete = () => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/delete">Delete</Link>
-                            </li>
-                            <li className="nav-item">
-                                <button className="nav-link btn" onClick={handleLogout}>Logout</button>
                             </li>
                         </ul>
                     </div>
