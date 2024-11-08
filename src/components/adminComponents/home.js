@@ -4,6 +4,8 @@ import { db } from '../../firebase/firebase';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import PopularBooks from "../homenew";
 import ImageSlider from "../imagesider";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase/firebase";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -28,6 +30,15 @@ const Home = () => {
         } catch (error) {
             console.error("Error deleting book:", error);
             alert("Error deleting book, please try again.");
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            navigate("/login");
+        } catch (error) {
+            console.error("Error logging out:", error);
         }
     };
 
@@ -68,6 +79,11 @@ const Home = () => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/delete">Delete</Link>
+                            </li>
+                            <li className="nav-item">
+                                <button className="nav-link btn btn-link text-decoration-none text-white" onClick={handleLogout}>
+                                    Logout
+                                </button>
                             </li>
                         </ul>
                     </div>

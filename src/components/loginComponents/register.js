@@ -98,10 +98,11 @@ const Register = () => {
                                     className="form-control"
                                     placeholder="Roll Number"
                                     value={rollNumber}
-                                    onChange={(e) => setRollNumber(e.target.value)}
+                                    onChange={(e) => setRollNumber(e.target.value.toLowerCase())}
                                     required
                                 />
                             </div>
+
                             <div className="mb-3">
                                 <input
                                     type="text"

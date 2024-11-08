@@ -102,7 +102,9 @@ const Home = () => {
                         filteredBooks.map(book => (
                             <div className="col-md-4 mb-4" key={book.id}>
                                 <div className="card h-100 shadow-sm" onDoubleClick={() => handleDoubleClick(book)}>
-                                    <img src={book.photoURL} className="card-img-top fixed-img" alt={book.title} />
+                                    {/*<img src={book.photoURL} className="card-img-top fixed-img" alt={book.title}/>*/}
+                                    <img src={book.photoURL} className="card-img-top w-100 h-100" alt={book.title}
+                                         style={{objectFit: 'cover'}}/>
                                     <div className="card-body d-flex flex-column">
                                         <h5 className="card-title">{book.title}</h5>
                                         <p className="card-text"><strong>Author:</strong> {book.author}</p>
@@ -116,7 +118,7 @@ const Home = () => {
                 </div>
 
                 <div className="mt-5">
-                    <PopularBooks />
+                <PopularBooks />
                 </div>
             </div>
         </div>
