@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { db } from '../firebase/firebase'; // Ensure you have Firebase configured
-import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { db } from '../../firebase/firebase'; // Ensure you have Firebase configured
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; // Import Firebase Auth
 
 const BookDetail = () => {
     const { id } = useParams(); // Get the book ID from the URL
     const [book, setBook] = useState(null); // Initialize book state
     const [reviews, setReviews] = useState([]); // Initialize reviews state
-    const [newReview, setNewReview] = useState({ rating: 0, comment: '' }); // Initialize new review state
     const [loading, setLoading] = useState(true); // Track loading state
     const [user, setUser] = useState(null); // Initialize user state
     const [averageRating, setAverageRating] = useState(0); // Initialize average rating state
+    const navigate = useNavigate(); // Navigate for redirecting
 
     useEffect(() => {
         const fetchBook = async () => {
@@ -54,7 +54,13 @@ const BookDetail = () => {
                 name: currentUser.email || 'user', // Changed displayName to name
             });
         }
-    }, [id]); // Fetch book and reviews when the component mounts or ID changes
+
+        // Check for admin role
+        const role = localStorage.getItem("userRole");
+        if (role || role !== "admin") {
+            navigate("/login"); // Redirect if not an admin
+        }
+    }, [id, navigate]); // Fetch book and reviews when the component mounts or ID changes
 
     const renderStars = (rating) => {
         const totalStars = 5;
@@ -64,9 +70,6 @@ const BookDetail = () => {
         }
         return stars; // Return the star string
     };
-
-
-
 
     if (loading) {
         return <div className="text-center">Loading...</div>; // Show loading state while fetching
@@ -107,7 +110,6 @@ const BookDetail = () => {
                     <p>No reviews yet. Be the first to review this book!</p>
                 )}
             </div>
-
         </div>
     );
 };

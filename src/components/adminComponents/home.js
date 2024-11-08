@@ -1,18 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../firebase/firebase";
+import { auth } from "../../firebase/firebase";
 import { signOut } from "firebase/auth";
-import { db } from '../firebase/firebase';
+import { db } from '../../firebase/firebase';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import PopularBooks from "./homenew";
-import ImageSlider from "./imagesider";  // Import PopularBooks component
+import PopularBooks from "../homenew";
+import ImageSlider from "../imagesider";
 
 const Home = () => {
     const navigate = useNavigate();
     const [books, setBooks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [userRole, setUserRole] = useState("");
 
     useEffect(() => {
+        // Check user role
+        const role = localStorage.getItem("userRole");
+        if (!role || role !== "admin") {
+            // Redirect to login or another page if not admin
+            navigate("/login");
+            return;
+        }
+        setUserRole(role);
+
         const fetchBooks = async () => {
             const booksCollection = collection(db, 'books');
             const booksSnapshot = await getDocs(booksCollection);
@@ -21,11 +31,12 @@ const Home = () => {
         };
 
         fetchBooks();
-    }, []);
+    }, [navigate]);
 
     const handleLogout = async () => {
         try {
             await signOut(auth);
+            localStorage.removeItem("userRole"); // Clear the user role on logout
             navigate("/login");
         } catch (error) {
             console.error("Error during logout:", error);
@@ -68,7 +79,7 @@ const Home = () => {
         <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div className="container-fluid">
-                    <Link className="navbar-brand" to="/">My App</Link>
+                    <Link className="navbar-brand" to="/fine">My App</Link>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav ms-auto">
                             <li className="nav-item">
@@ -91,8 +102,6 @@ const Home = () => {
             <div className="container my-4">
                 <h1 className="text-center">Welcome to the Book Management App!</h1>
                 <p className="text-center">Manage your books easily. Use the navigation bar to access different sections.</p>
-
-
 
                 <div className="input-group mb-4">
                     <input
@@ -134,7 +143,7 @@ const Home = () => {
                     )}
                 </div>
                 {/* Render the PopularBooks component here */}
-
+                <PopularBooks />
             </div>
         </div>
     );

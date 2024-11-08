@@ -1,6 +1,5 @@
-// src/components/UpdateBook.js
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase/firebase';
+import { db } from '../../firebase/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -39,7 +38,13 @@ const UpdateBook = () => {
             }
         };
 
-        fetchBookDetails();
+        // Check for admin role
+        const role = localStorage.getItem("userRole");
+        if (role || role !== "admin") {
+            navigate("/login"); // Redirect if not an admin
+        } else {
+            fetchBookDetails(); // Fetch details only if admin
+        }
     }, [id, navigate]);
 
     // Handle form submission to update the book

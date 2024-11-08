@@ -1,11 +1,10 @@
-// src/components/Home.js
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { signOut } from "firebase/auth";
 import { collection, getDocs } from "firebase/firestore";
-import ImageSlider from "./imagesider";
-import PopularBooks from "./homenew";
+import ImageSlider from "../imagesider";
+import PopularBooks from "../homenew";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -13,6 +12,13 @@ const Home = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
+        const checkUserRole = () => {
+            const role = localStorage.getItem("userRole");
+            if (!role || role !== "student") {
+                navigate("/login"); // Redirect if not a student
+            }
+        };
+
         const fetchBooks = async () => {
             const booksCollection = collection(db, 'books');
             const booksSnapshot = await getDocs(booksCollection);
@@ -20,8 +26,9 @@ const Home = () => {
             setBooks(booksList);
         };
 
-        fetchBooks();
-    }, []);
+        checkUserRole(); // Check user role first
+        fetchBooks(); // Then fetch books
+    }, [navigate]);
 
     const handleLogout = async () => {
         try {

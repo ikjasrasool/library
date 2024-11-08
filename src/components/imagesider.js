@@ -8,34 +8,39 @@ function ImageSlider() {
                 <Carousel.Item interval={1000}>
                     <img
                         className="d-block w-100"
-                        src="https://images.unsplash.com/photo-1616070152767-3eb99cf10509?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                        src="https://media.istockphoto.com/id/2168846855/photo/historic-mayors-office-in-french-town-hall-of-ambronay-village-with-library-and-wooden.webp?a=1&b=1&s=612x612&w=0&k=20&c=X0BBJ_vZ63ajsxRewTvO8IkGEpUuUHJbceICC6LHRR4="
                         alt="First slide"
+                        style={{ height: '500px' }}
                     />
                     <Carousel.Caption>
-                        <h3>First slide label</h3>
-                        <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
+                        {/*<h3>First slide label</h3>*/}
+                        {/*<p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>*/}
                     </Carousel.Caption>
                 </Carousel.Item>
                 <Carousel.Item interval={500}>
                     <img
                         className="d-block w-100"
-                        src="https://images.unsplash.com/photo-1502136969935-8d8eef54d77b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1049&q=80"
+                        src="https://media.istockphoto.com/id/1498878143/photo/book-stack-and-open-book-on-the-desk-in-modern-public-library.webp?a=1&b=1&s=612x612&w=0&k=20&c=sVkVRw7LMHXr5lJLanrub-oGCompIQPeWbElq4E89G8="
                         alt="Second slide"
+                        style={{ height: '500px' }}
+
                     />
                     <Carousel.Caption>
-                        <h3>Second slide label</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                        {/*<h3>Second slide label</h3>*/}
+                        {/*<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>*/}
                     </Carousel.Caption>
                 </Carousel.Item>
                 <Carousel.Item>
                     <img
                         className="d-block w-100"
-                        src="https://images.unsplash.com/photo-1608454367599-c133fcab1245?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                        src="https://images.unsplash.com/photo-1522407183863-c0bf2256188c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxpYnJhcmF5JTIwYm9va3MlMjBwaG90b3N8ZW58MHx8MHx8fDA%3D"
                         alt="Third slide"
+                        style={{ height: '500px' }}
+
                     />
                     <Carousel.Caption>
-                        <h3>Third slide label</h3>
-                        <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
+                        {/*<h3>Third slide label</h3>*/}
+                        {/*<p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>*/}
                     </Carousel.Caption>
                 </Carousel.Item>
             </Carousel>

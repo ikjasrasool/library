@@ -1,17 +1,18 @@
 // src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./components/login";
-import Register from "./components/register";
-import Home from "./components/home";
-import Update from './components/update';
-import Delete from './components/delete';
-import AddBook from './components/addBook';
-import BookDetail from './components/BookDetail';
-import BooksList from './components/bookUpdate';
-import StudentBook from './components/studentHome';
-import Profile from "./components/profile";
-import SruBookDetail from "./components/stuBookDetail";
+import Login from "./components/loginComponents/login";
+import Register from "./components/loginComponents/register";
+import Home from "./components/adminComponents/home";
+import Update from './components/adminComponents/update';
+import Delete from './components/adminComponents/delete';
+import Fine from './components/adminComponents/fine';
+import AddBook from './components/adminComponents/addBook';
+import BookDetail from './components/adminComponents/BookDetail';
+import BooksList from './components/adminComponents/bookUpdate';
+import StudentBook from './components/userComponenets/studentHome';
+import Profile from "./components/userComponenets/profile";
+import SruBookDetail from "./components/userComponenets/stuBookDetail";
 import NewHome from "./components/homenew";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/fine" element={<Fine />} />
             <Route path="/update/:id" element={<Update/>} />
             <Route path="/delete" element={<Delete />} />
             <Route path="/books" element={<BooksList />} />

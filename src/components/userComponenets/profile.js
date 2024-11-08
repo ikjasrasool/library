@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
@@ -39,7 +39,7 @@ const Profile = () => {
                         ...doc.data(),
                     }));
                     setBorrowedBooks(booksList);
-                    calculateTotalFine(booksList);
+                    await calculateTotalFine(booksList);
                 } else {
                     console.error("User document does not exist");
                     navigate("/login");
@@ -52,24 +52,58 @@ const Profile = () => {
         fetchUserData();
     }, [navigate]);
 
-    const calculateTotalFine = (books) => {
+    const calculateTotalFine = async (books) => {
         let total = 0;
         const currentDate = new Date();
 
-        books.forEach(book => {
+        for (const book of books) {
             const returnDate = new Date(book.returnDate);
-            const daysOverdue = Math.ceil((currentDate - returnDate) / (1000 * 3600 * 24)*3.7);
+            const daysOverdue = Math.ceil((currentDate - returnDate) / (1000 * 3600 * 24));
 
             if (daysOverdue > 0) {
-                const fine = daysOverdue; // $1 per day overdue
-                total += fine; // Add to total fine
-                book.fine = fine; // Assign fine to the book object
+                const fine = daysOverdue * 5; // Fine is ₹5 per day
+                total += fine;
+                book.fine = fine;
+
+                // Update fine in Firestore
+                const user = auth.currentUser;
+                if (user) {
+                    const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", book.id);
+                    await updateDoc(bookDocRef, { fine });
+                }
             } else {
-                book.fine = 0; // No fine if not overdue
+                book.fine = 0;
+
+                // Reset fine in Firestore if no overdue
+                const user = auth.currentUser;
+                if (user) {
+                    const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", book.id);
+                    await updateDoc(bookDocRef, { fine: 0 });
+                }
             }
-        });
+        }
 
         setTotalFine(total);
+    };
+
+    const handleExtendReturnDate = async (bookId) => {
+        const user = auth.currentUser;
+        if (user) {
+            const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
+            const bookDoc = await getDoc(bookDocRef);
+
+            if (bookDoc.exists()) {
+                const bookData = bookDoc.data();
+                const newReturnDate = new Date(bookData.returnDate);
+                newReturnDate.setDate(newReturnDate.getDate() + 7); // Extend by 7 days
+
+                await updateDoc(bookDocRef, { returnDate: newReturnDate.toISOString().split("T")[0] });
+                setBorrowedBooks(prevBooks => prevBooks.map(book =>
+                    book.id === bookId ? { ...book, returnDate: newReturnDate.toISOString().split("T")[0] } : book
+                ));
+                await calculateTotalFine(borrowedBooks); // Recalculate total fine after date extension
+            }
+        }
     };
 
     const handleEditClick = () => {
@@ -109,19 +143,19 @@ const Profile = () => {
                 if (!borrowedBook) return;
 
                 const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
-                await deleteDoc(bookDocRef);
+                await deleteDoc(bookDocRef); // Remove from borrowedBooks collection
 
                 const bookDocRefToUpdate = doc(db, "books", borrowedBook.bookId);
                 const bookDoc = await getDoc(bookDocRefToUpdate);
                 if (bookDoc.exists()) {
                     const bookData = bookDoc.data();
                     await updateDoc(bookDocRefToUpdate, {
-                        noOfBooks: (bookData.noOfBooks || 0) + 1
+                        noOfBooks: (bookData.noOfBooks || 0) + 1 // Increment available books
                     });
                 }
 
-                setBorrowedBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
-                calculateTotalFine(borrowedBooks);
+                setBorrowedBooks(prevBooks => prevBooks.filter(book => book.id !== bookId)); // Update local state
+                await calculateTotalFine(borrowedBooks); // Recalculate total fine
             } catch (error) {
                 console.error("Error returning book: ", error);
             }
@@ -184,7 +218,7 @@ const Profile = () => {
                                     <h5><strong>Name:</strong> {userInfo.name}</h5>
                                     <p><strong>Roll Number:</strong> {userInfo.rollNumber}</p>
                                     <p><strong>Department:</strong> {userInfo.department}</p>
-                                    <p><strong>Total Fine:</strong> ${totalFine}</p>
+                                    <p><strong>Total Fine:</strong> ₹{totalFine}</p>
                                     <button className="btn btn-warning" onClick={handleEditClick}>Edit Profile</button>
                                 </>
                             )}
@@ -198,8 +232,9 @@ const Profile = () => {
                             <th>Book Name</th>
                             <th>Entry Date</th>
                             <th>Return Date</th>
-                            <th>Fine</th> {/* New column for fine */}
+                            <th>Fine</th>
                             <th>Actions</th>
+                            <th>Extend Return Date</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -208,13 +243,23 @@ const Profile = () => {
                                 <td>{book.title}</td>
                                 <td>{book.EntryDate}</td>
                                 <td>{book.returnDate}</td>
-                                <td>${book.fine || 0}</td> {/* Display fine for each book */}
+                                <td>₹{book.fine || 0}</td>
                                 <td>
                                     <button
                                         className="btn btn-danger"
                                         onClick={() => handleReturnBook(book.id)}
+                                        disabled={book.fine > 0} // Disable if fine is greater than 0
                                     >
                                         Return
+                                    </button>
+                                </td>
+                                <td>
+                                    <button
+                                        className="btn btn-info"
+                                        onClick={() => handleExtendReturnDate(book.id)}
+                                        disabled={book.fine > 0} // Disable if fine is greater than 0
+                                    >
+                                        Extend 7 Days
                                     </button>
                                 </td>
                             </tr>

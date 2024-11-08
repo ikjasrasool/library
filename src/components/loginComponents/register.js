@@ -1,6 +1,5 @@
-// src/components/Register.js
 import React, { useState } from "react";
-import { auth, db } from "../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -8,10 +7,11 @@ import { useNavigate } from "react-router-dom";
 const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [name, setName] = useState(""); // Add state for name
-    const [role, setRole] = useState("student"); // Default to "student"
+    const [name, setName] = useState("");
+    const [role, setRole] = useState("student");
     const [rollNumber, setRollNumber] = useState("");
-    const [department, setDepartment] = useState(""); // Adjust based on admin requirements
+    const [department, setDepartment] = useState("");
+    const [batch, setBatch] = useState(""); // New state for batch
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -21,22 +21,21 @@ const Register = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Set user data based on role
             const userData = {
                 uid: user.uid,
                 email: user.email,
-                name, // Include name in the user data
+                name,
                 role,
             };
 
             if (role === "student") {
                 userData.rollNumber = rollNumber;
                 userData.department = department;
+                userData.batch = batch; // Include batch in user data
             } else if (role === "admin") {
-                // Additional fields for admin can be added here if necessary
+                // Additional fields for admin if necessary
             }
 
-            // Save user data to Firestore
             await setDoc(doc(db, "users", user.uid), userData);
             navigate("/login");
         } catch (error) {
@@ -53,9 +52,9 @@ const Register = () => {
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Name" // Placeholder for name
+                            placeholder="Name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)} // Set name value
+                            onChange={(e) => setName(e.target.value)}
                             required
                         />
                     </div>
@@ -113,11 +112,21 @@ const Register = () => {
                                     required
                                 />
                             </div>
+                            <div className="mb-3">
+                                <select
+                                    className="form-control"
+                                    value={batch}
+                                    onChange={(e) => setBatch(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select Batch</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2022">2026</option>
+                                    <option value="2023">2027</option>
+                                    <option value="2024">2028</option>
+                                </select>
+                            </div>
                         </>
-                    )}
-
-                    {role === "admin" && (
-                        <></> // Additional fields for admin can be added here if necessary
                     )}
 
                     <button type="submit" className="btn btn-primary w-100">Register</button>

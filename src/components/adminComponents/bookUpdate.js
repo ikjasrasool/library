@@ -1,38 +1,32 @@
-// src/components/Delete.js
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase/firebase'; // Import your Firebase Firestore instance
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebase/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../firebase/firebase';
-import { signOut } from 'firebase/auth';
+import { auth } from "../../firebase/firebase"; // Import Firebase auth for logout
+import { signOut } from "firebase/auth"; // Import signOut function
 
-const Delete = () => {
+const BooksList = () => {
     const [books, setBooks] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(''); // State for search term
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBooks = async () => {
-            const booksCollection = collection(db, 'books'); // Adjust the collection name as needed
+            const booksCollection = collection(db, 'books');
             const booksSnapshot = await getDocs(booksCollection);
             const booksList = booksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setBooks(booksList);
         };
 
         fetchBooks();
-    }, []);
 
-    const handleDelete = async (id) => {
-        try {
-            await deleteDoc(doc(db, 'books', id)); // Adjust the collection name as needed
-            setBooks(books.filter(book => book.id !== id)); // Update local state
-        } catch (error) {
-            console.error("Error deleting book:", error);
-            alert("Error deleting book, please try again.");
+        // Check for admin role
+        const role = localStorage.getItem("userRole");
+        if (role || role !== "admin") {
+            navigate("/login"); // Redirect if not an admin
         }
-    };
+    }, [navigate]); // Check the role when the component mounts
 
-    // Handle logout
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -44,12 +38,12 @@ const Delete = () => {
 
     // Filter books based on the search term
     const filteredBooks = books.filter(book =>
-        book.title.toLowerCase().includes(searchTerm.toLowerCase())
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
-            {/* Navigation Bar */}
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div className="container-fluid">
                     <Link className="navbar-brand" to="/">My App</Link>
@@ -73,14 +67,14 @@ const Delete = () => {
             </nav>
 
             <div className="container my-4">
-                <h1 className="text-center mb-4">Delete Books</h1>
+                <h1 className="text-center">All Books</h1>
 
                 {/* Search Input */}
                 <div className="mb-4">
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="Search by title..."
+                        placeholder="Search by title or author..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -89,20 +83,18 @@ const Delete = () => {
                 <div className="row">
                     {filteredBooks.length === 0 ? (
                         <div className="col-12 text-center">
-                            <h5>No books available to delete.</h5>
+                            <h5>No books available. Please add some books!</h5>
                         </div>
                     ) : (
-                        filteredBooks.map(book => (
+                        filteredBooks.map((book) => (
                             <div className="col-md-4 mb-4" key={book.id}>
                                 <div className="card h-100 shadow-sm">
-                                    <img src={book.photoURL} className="card-img-top fixed-img" alt={book.title}/>
+                                    <img src={book.photoURL} className="card-img-top fixed-img" alt={book.title} />
                                     <div className="card-body">
                                         <h5 className="card-title">{book.title}</h5>
                                         <p className="card-text"><strong>Author:</strong> {book.author}</p>
                                         <p className="card-text"><strong>Genre:</strong> {book.genre}</p>
-                                        <button onClick={() => handleDelete(book.id)}
-                                                className="btn btn-danger">Delete
-                                        </button>
+                                        <Link to={`/update/${book.id}`} className="btn btn-primary">Update</Link>
                                     </div>
                                 </div>
                             </div>
@@ -114,4 +106,4 @@ const Delete = () => {
     );
 };
 
-export default Delete;
+export default BooksList;

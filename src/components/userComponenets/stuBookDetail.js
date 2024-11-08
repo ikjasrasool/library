@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { db } from '../firebase/firebase';
+import { db } from '../../firebase/firebase';
 import { doc, getDoc, collection, getDocs, addDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
@@ -15,11 +15,25 @@ const BookDetail = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            navigate('/login');
+        } else {
+            setUser({
+                uid: currentUser.uid,
+                name: currentUser.email || 'user',
+            });
+        }
+
         const fetchBook = async () => {
             try {
                 const bookDoc = await getDoc(doc(db, 'books', id));
                 if (bookDoc.exists()) {
-                    setBook({ id: bookDoc.id, ...bookDoc.data() });
+                    const bookData = { id: bookDoc.id, ...bookDoc.data() };
+                    setBook(bookData);
+                    await updateBookStatus(bookData.noOfBooks); // Check and update book status
                 } else {
                     console.error("No such document!");
                 }
@@ -43,16 +57,7 @@ const BookDetail = () => {
         };
 
         fetchBook();
-
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            setUser({
-                uid: currentUser.uid,
-                name: currentUser.email || 'user',
-            });
-        }
-    }, [id]);
+    }, [id, navigate]);
 
     const renderStars = (rating) => {
         const totalStars = 5;
@@ -89,28 +94,34 @@ const BookDetail = () => {
     };
 
     const handleBorrow = async () => {
-        if (!user || !book || book.noOfBooks <= 0) return;
+        if (!user || !book) return;
 
-        try {
-            // Reduce book count in the database
-            const bookDocRef = doc(db, 'books', id);
-            await updateDoc(bookDocRef, { noOfBooks: book.noOfBooks - 1 });
-
-            // Record the borrow entry for the user
-            const returnDate = new Date(new Date().setDate(new Date().getDate() -2)).toISOString().split("T")[0]; // Set return date to 1 week
+        if (book.noOfBooks > 0) {
+            await updateDoc(doc(db, 'books', id), { noOfBooks: book.noOfBooks - 1 });
+            const returnDate = new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split("T")[0];
             await addDoc(collection(db, 'borrowedBooks', user.uid, 'books'), {
                 bookId: id,
                 title: book.title,
                 EntryDate: new Date().toISOString().split("T")[0],
-                returnDate: returnDate, // Updated to 1 week
+                returnDate,
             });
-
-            // Update local state
             setBook(prevBook => ({ ...prevBook, noOfBooks: prevBook.noOfBooks - 1 }));
+            await updateBookStatus(book.noOfBooks - 1);
             navigate("/student-home", { replace: true });
-        } catch (error) {
-            console.error("Error borrowing book:", error);
+        } else {
+            alert("This book is currently not available for borrowing.");
         }
+    };
+
+    const handleReturn = async () => {
+        await updateDoc(doc(db, 'books', id), { noOfBooks: book.noOfBooks + 1 });
+        await updateBookStatus(book.noOfBooks + 1);
+        navigate("/student-home", { replace: true });
+    };
+
+    const updateBookStatus = async (availableCount) => {
+        const status = availableCount > 0 ? 'Available' : 'Not Available';
+        await updateDoc(doc(db, 'books', id), { status });
     };
 
     if (loading) {
@@ -124,7 +135,7 @@ const BookDetail = () => {
                     <img src={book.photoURL} className="img-fluid" alt={book.title} />
                 </div>
                 <div className="col-md-6">
-                    <h1>{book.title}</h1> {/* Ensure title is displayed */}
+                    <h1>{book.title}</h1>
                     <h5>Author: {book.author}</h5>
                     <p><strong>Genre:</strong> {book.genre}</p>
                     <p><strong>Description:</strong> {book.description}</p>
@@ -133,9 +144,15 @@ const BookDetail = () => {
                     <p><strong>Location:</strong> {book.location}</p>
                     <p><strong>Average Rating:</strong> {renderStars(averageRating)} ({averageRating})</p>
                     <div className="d-flex justify-content-between align-items-center">
-                        <button onClick={handleBorrow} className="btn btn-primary" disabled={book.noOfBooks <= 0}>
-                            {book.noOfBooks > 0 ? "Borrow" : "Out of Stock"}
-                        </button>
+                        {book.noOfBooks > 0 ? (
+                            <button onClick={handleBorrow} className="btn btn-primary">
+                                Borrow
+                            </button>
+                        ) : (
+                            <button className="btn btn-warning" disabled>
+                                Not Available
+                            </button>
+                        )}
                         <Link to="/student-home" className="btn btn-secondary">Back to Home</Link>
                     </div>
                 </div>
