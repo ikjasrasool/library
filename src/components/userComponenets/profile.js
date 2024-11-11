@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { Html5Qrcode } from "html5-qrcode";
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -14,8 +13,6 @@ const Profile = () => {
         department: "",
     });
     const [totalFine, setTotalFine] = useState(0);
-    const [isScanning, setIsScanning] = useState(false);
-    const html5QrcodeScanner = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -89,79 +86,24 @@ const Profile = () => {
         setTotalFine(total);
     };
 
-    const startScanning = async (onSuccess) => {
-        setIsScanning(true);
-        html5QrcodeScanner.current = new Html5Qrcode("barcode-scanner");
-
-        html5QrcodeScanner.current.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            async (decodedText) => {
-                if (decodedText.trim().toLowerCase() === userInfo.rollNumber.toLowerCase()) {
-                    await onSuccess(); // Execute the action if roll number matches
-                    html5QrcodeScanner.current.stop().catch((err) => console.warn("Stop scan error:", err));
-                    setIsScanning(false);
-                } else {
-                    alert("Roll number does not match. Access denied.");
-                    setIsScanning(false);
-                }
-            },
-            (errorMessage) => console.warn(`Scanning error: ${errorMessage}`)
-        ).catch(error => {
-            console.error("Scanner error:", error);
-            setIsScanning(false);
-        });
-    };
-
-    const handleReturnBook = async (bookId) => {
-        startScanning(async () => {
-            const user = auth.currentUser;
-            if (user) {
-                try {
-                    const borrowedBook = borrowedBooks.find(book => book.id === bookId);
-                    if (!borrowedBook) return;
-
-                    const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
-                    await deleteDoc(bookDocRef); // Remove from borrowedBooks collection
-
-                    const bookDocRefToUpdate = doc(db, "books", borrowedBook.bookId);
-                    const bookDoc = await getDoc(bookDocRefToUpdate);
-                    if (bookDoc.exists()) {
-                        const bookData = bookDoc.data();
-                        await updateDoc(bookDocRefToUpdate, {
-                            noOfBooks: (bookData.noOfBooks || 0) + 1 // Increment available books
-                        });
-                    }
-
-                    setBorrowedBooks(prevBooks => prevBooks.filter(book => book.id !== bookId)); // Update local state
-                    await calculateTotalFine(borrowedBooks); // Recalculate total fine
-                } catch (error) {
-                    console.error("Error returning book: ", error);
-                }
-            }
-        });
-    };
-
     const handleExtendReturnDate = async (bookId) => {
-        startScanning(async () => {
-            const user = auth.currentUser;
-            if (user) {
-                const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
-                const bookDoc = await getDoc(bookDocRef);
+        const user = auth.currentUser;
+        if (user) {
+            const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
+            const bookDoc = await getDoc(bookDocRef);
 
-                if (bookDoc.exists()) {
-                    const bookData = bookDoc.data();
-                    const newReturnDate = new Date(bookData.returnDate);
-                    newReturnDate.setDate(newReturnDate.getDate() + 7); // Extend by 7 days
+            if (bookDoc.exists()) {
+                const bookData = bookDoc.data();
+                const newReturnDate = new Date(bookData.returnDate);
+                newReturnDate.setDate(newReturnDate.getDate() + 7); // Extend by 7 days
 
-                    await updateDoc(bookDocRef, { returnDate: newReturnDate.toISOString().split("T")[0] });
-                    setBorrowedBooks(prevBooks => prevBooks.map(book =>
-                        book.id === bookId ? { ...book, returnDate: newReturnDate.toISOString().split("T")[0] } : book
-                    ));
-                    await calculateTotalFine(borrowedBooks); // Recalculate total fine after date extension
-                }
+                await updateDoc(bookDocRef, { returnDate: newReturnDate.toISOString().split("T")[0] });
+                setBorrowedBooks(prevBooks => prevBooks.map(book =>
+                    book.id === bookId ? { ...book, returnDate: newReturnDate.toISOString().split("T")[0] } : book
+                ));
+                await calculateTotalFine(borrowedBooks); // Recalculate total fine after date extension
             }
-        });
+        }
     };
 
     const handleEditClick = () => {
@@ -188,6 +130,34 @@ const Profile = () => {
                 setEditMode(false);
             } catch (error) {
                 console.error("Error updating profile: ", error);
+            }
+        }
+    };
+
+    const handleReturnBook = async (bookId) => {
+        const user = auth.currentUser;
+
+        if (user) {
+            try {
+                const borrowedBook = borrowedBooks.find(book => book.id === bookId);
+                if (!borrowedBook) return;
+
+                const bookDocRef = doc(db, "borrowedBooks", user.uid, "books", bookId);
+                await deleteDoc(bookDocRef); // Remove from borrowedBooks collection
+
+                const bookDocRefToUpdate = doc(db, "books", borrowedBook.bookId);
+                const bookDoc = await getDoc(bookDocRefToUpdate);
+                if (bookDoc.exists()) {
+                    const bookData = bookDoc.data();
+                    await updateDoc(bookDocRefToUpdate, {
+                        noOfBooks: (bookData.noOfBooks || 0) + 1 // Increment available books
+                    });
+                }
+
+                setBorrowedBooks(prevBooks => prevBooks.filter(book => book.id !== bookId)); // Update local state
+                await calculateTotalFine(borrowedBooks); // Recalculate total fine
+            } catch (error) {
+                console.error("Error returning book: ", error);
             }
         }
     };
@@ -255,37 +225,53 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <h3>Borrowed Books</h3>
-                    {borrowedBooks.map((book) => (
-                        <div className="card mb-3" key={book.id}>
-                            <div className="card-body">
-                                <h5>{book.bookTitle}</h5>
-                                <p><strong>Due Date:</strong> {book.returnDate}</p>
-                                <p><strong>Fine:</strong> ₹{book.fine}</p>
-                                <button
-                                    className="btn btn-success"
-                                    onClick={() => handleReturnBook(book.id)}
-                                    disabled={isScanning}
-                                >
-                                    Return Book
-                                </button>
-                                <button
-                                    className="btn btn-info ms-2"
-                                    onClick={() => handleExtendReturnDate(book.id)}
-                                    disabled={isScanning}
-                                >
-                                    Extend Return Date
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                    <h3 className="mt-4">Borrowed Books</h3>
+                    <table className="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Book Name</th>
+                            <th>Entry Date</th>
+                            <th>Return Date</th>
+                            <th>Fine</th>
+                            <th>Actions</th>
+                            <th>Extend Return Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {borrowedBooks.map(book => (
+                            <tr key={book.id}>
+                                <td>{book.title}</td>
+                                <td>{book.EntryDate}</td>
+                                <td>{book.returnDate}</td>
+                                <td>₹{book.fine || 0}</td>
+                                <td>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => handleReturnBook(book.id)}
+                                        disabled={book.fine > 0} // Disable if fine is greater than 0
+                                    >
+                                        Return
+                                    </button>
+                                </td>
+                                <td>
+                                    <button
+                                        className="btn btn-info"
+                                        onClick={() => handleExtendReturnDate(book.id)}
+                                        disabled={book.fine > 0} // Disable if fine is greater than 0
+                                    >
+                                        Extend 7 Days
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </>
             ) : (
-                <p>Loading user data...</p>
+                <p>Loading user information...</p>
             )}
-            <div id="barcode-scanner" style={{ display: isScanning ? "block" : "none" }}></div>
         </div>
     );
 };
 
-export default Profile;
+export default Profile; 

@@ -68,7 +68,7 @@ const Home = () => {
         <div style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div className="container-fluid">
-                    <Link className="navbar-brand" to="/fine">My App</Link>
+                    <Link className="navbar-brand" to="/fine">My Library</Link>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav ms-auto">
                             <li className="nav-item">

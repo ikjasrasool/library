@@ -24,18 +24,13 @@ const LoginWithBarcode = () => {
             html5QrcodeScanner.current = new Html5Qrcode("barcode-scanner");
             html5QrcodeScanner.current.start(
                 { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                },
+                { fps: 20, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
                     console.log(`Scanned Barcode (Roll Number): ${decodedText}`);
                     fetchEmailFromRollNumber(decodedText);
                     setIsScanning(false);
                 },
-                (errorMessage) => {
-                    console.warn(`Scan failed: ${errorMessage}`);
-                }
+                (errorMessage) => console.warn(`Scan failed: ${errorMessage}`)
             ).catch((error) => {
                 console.error("Failed to start the scanner:", error);
                 setIsScanning(false);
@@ -46,16 +41,13 @@ const LoginWithBarcode = () => {
             if (html5QrcodeScanner.current && isScanning) {
                 html5QrcodeScanner.current.stop().then(() => {
                     html5QrcodeScanner.current.clear();
-                }).catch((err) => {
-                    console.warn("Scanner stop error:", err);
-                });
+                }).catch((err) => console.warn("Scanner stop error:", err));
             }
         };
     }, [isScanning]);
 
     const fetchEmailFromRollNumber = async (scannedRollNumber) => {
         const normalizedRollNumber = scannedRollNumber.trim().toLowerCase();
-
         try {
             const usersCollectionRef = collection(db, "users");
             const q = query(usersCollectionRef, where("rollNumber", "==", normalizedRollNumber));
@@ -125,16 +117,26 @@ const LoginWithBarcode = () => {
         zIndex: -1,
     };
 
+    const cardContentStyle = {
+        width: "100%",
+        height: "300px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        border: "2px solid #ccc",
+        borderRadius: "5px",
+        overflow: "hidden",
+    };
+
     return (
         <div className="container d-flex justify-content-center align-items-center min-vh-100">
             <div style={staticBackgroundStyle}></div>
 
-            <div className="row w-100" style={{ maxWidth: "800px" }}>
-                <div className="col-md-6 d-flex align-items-center">
-                    <div className="card p-4 w-100">
+            <div className="card shadow-lg p-4" style={{ maxWidth: "900px", width: "100%", borderRadius: "10px" }}>
+                <div className="row">
+                    <div className="col-md-6 d-flex flex-column align-items-center">
                         <h2 className="text-center mb-4">Login</h2>
-
-                        <form onSubmit={handleLogin}>
+                        <form onSubmit={handleLogin} style={{ width: "100%" }}>
                             <div className="mb-3">
                                 <input
                                     type="email"
@@ -160,14 +162,12 @@ const LoginWithBarcode = () => {
                             </button>
                             {error && <p className="text-danger mt-3 text-center">{error}</p>}
                         </form>
-
                         <button
                             onClick={() => setIsScanning((prev) => !prev)}
                             className="btn btn-info w-100 mt-3"
                         >
                             {isScanning ? "Stop Scanning" : "Start Scanning"}
                         </button>
-
                         <p className="mt-3 text-center">
                             Don't have an account?{" "}
                             <button className="btn btn-link" onClick={() => navigate("/register")}>
@@ -175,20 +175,25 @@ const LoginWithBarcode = () => {
                             </button>
                         </p>
                     </div>
-                </div>
 
-                <div className="col-md-6 d-none d-md-block">
-                    {isScanning ? (
-                        <div id="barcode-scanner" ref={scannerRef} style={{ width: "300px", height: "300px" }}></div>
-
-                    ) : (
-                        <img
-                            src="https://media.istockphoto.com/id/1498878143/photo/book-stack-and-open-book-on-the-desk-in-modern-public-library.jpg?s=612x612&w=0&k=20&c=vRcxdgfHSFJkow6DNPtaL9DT_ttdMGWel-qRLEzkQEI="
-                            alt="Login Illustration"
-                            className="img-fluid"
-                            style={{ objectFit: "cover", height: "100%", borderRadius: "5px" }}
-                        />
-                    )}
+                    <div className="col-md-6 d-flex justify-content-center align-items-center">
+                        <div style={cardContentStyle}>
+                            {isScanning ? (
+                                <div
+                                    id="barcode-scanner"
+                                    ref={scannerRef}
+                                    style={{ width: "100%", height: "100%" }}
+                                ></div>
+                            ) : (
+                                <img
+                                    src="https://media.istockphoto.com/id/1498878143/photo/book-stack-and-open-book-on-the-desk-in-modern-public-library.jpg?s=612x612&w=0&k=20&c=vRcxdgfHSFJkow6DNPtaL9DT_ttdMGWel-qRLEzkQEI="
+                                    alt="Login Illustration"
+                                    className="img-fluid"
+                                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                                />
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

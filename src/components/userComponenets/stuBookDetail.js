@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase/firebase';
 import { doc, getDoc, collection, getDocs, addDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { Html5Qrcode } from "html5-qrcode"; // Import the barcode scanning library
 
 const BookDetail = () => {
     const { id } = useParams();
@@ -13,9 +12,6 @@ const BookDetail = () => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [averageRating, setAverageRating] = useState(0);
-    const [isScanning, setIsScanning] = useState(false); // To track if barcode scanning is active
-    const scannerRef = useRef(null);
-    const html5QrcodeScanner = useRef(null); // Reference for the scanner
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -99,34 +95,21 @@ const BookDetail = () => {
     };
 
     const handleBorrow = () => {
-        setIsScanning(true); // Start scanning when user clicks borrow
-    };
-
-    const validateRollNumber = async (scannedRollNumber) => {
-        if (scannedRollNumber.trim().toLowerCase() === user.rollNumber.toLowerCase()) {
-            if (html5QrcodeScanner.current) {
-                html5QrcodeScanner.current.stop().catch((err) => console.warn("Stop scan error:", err));
-            }
-            setIsScanning(false); // Stop scanning after a successful match
-
-            if (book.noOfBooks > 0) {
-                await updateDoc(doc(db, 'books', id), { noOfBooks: book.noOfBooks - 1 });
-                const returnDate = new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split("T")[0];
-                await addDoc(collection(db, 'borrowedBooks', user.uid, 'books'), {
+        if (book.noOfBooks > 0) {
+            updateDoc(doc(db, 'books', id), { noOfBooks: book.noOfBooks - 1 }).then(() => {
+                const returnDate = new Date(new Date().setDate(new Date().getDate() +7)).toISOString().split("T")[0];
+                addDoc(collection(db, 'borrowedBooks', user.uid, 'books'), {
                     bookId: id,
                     title: book.title,
                     EntryDate: new Date().toISOString().split("T")[0],
                     returnDate,
                 });
                 setBook(prevBook => ({ ...prevBook, noOfBooks: prevBook.noOfBooks - 1 }));
-                await updateBookStatus(book.noOfBooks - 1);
+                updateBookStatus(book.noOfBooks - 1);
                 navigate("/student-home", { replace: true });
-            } else {
-                alert("This book is currently not available for borrowing.");
-            }
+            });
         } else {
-            alert("Roll number does not match. Access denied.");
-            setIsScanning(false); // Stop scanning if roll number doesn't match
+            alert("This book is currently not available for borrowing.");
         }
     };
 
@@ -141,30 +124,6 @@ const BookDetail = () => {
         await updateDoc(doc(db, 'books', id), { status });
     };
 
-    const handleModalClose = () => {
-        // Stop scanning if the user closes the modal or cancels the scanning
-        if (html5QrcodeScanner.current) {
-            html5QrcodeScanner.current.stop().catch((err) => console.warn("Stop scan error:", err));
-        }
-        setIsScanning(false); // Ensure scanning is stopped
-    };
-
-    useEffect(() => {
-        if (isScanning) {
-            html5QrcodeScanner.current = new Html5Qrcode("barcode-scanner");
-
-            html5QrcodeScanner.current.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => validateRollNumber(decodedText), // Callback when barcode is scanned
-                (errorMessage) => console.warn(`Scanning error: ${errorMessage}`)
-            ).catch(error => {
-                console.error("Scanner error:", error);
-                setIsScanning(false); // Stop scanning if an error occurs
-            });
-        }
-    }, [isScanning]);
-
     if (loading) {
         return <div className="text-center">Loading...</div>;
     }
@@ -173,7 +132,7 @@ const BookDetail = () => {
         <div className="container my-4">
             <div className="row">
                 <div className="col-md-6">
-                    <img src={book.photoURL} className="img-fluid w-100 h-auto" alt={book.title}/>
+                    <img src={book.photoURL} className="img-fluid w-100 h-auto" alt={book.title} />
                 </div>
                 <div className="col-md-6">
                     <h1>{book.title}</h1>
@@ -195,22 +154,6 @@ const BookDetail = () => {
                             </button>
                         )}
                         <Link to="/student-home" className="btn btn-secondary">Back to Home</Link>
-                    </div>
-                </div>
-            </div>
-
-            {/* Modal for barcode scanner */}
-            <div className={`modal fade ${isScanning ? 'show' : ''}`} id="barcodeModal" style={{ display: isScanning ? 'block' : 'none' }} aria-hidden={!isScanning}>
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Scanning for Roll Number</h5>
-                            <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close" onClick={handleModalClose}>&times;</button>
-                        </div>
-                        <div className="modal-body">
-                            <div id="barcode-scanner"></div>
-                            <p className="text-center">Scan your barcode to borrow the book</p>
-                        </div>
                     </div>
                 </div>
             </div>
