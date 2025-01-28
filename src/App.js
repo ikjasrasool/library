@@ -18,7 +18,7 @@ import NewHome from "./components/homenew";
 function App() {
   return (
       <Router>
-        <div className="container mt-4">
+        <div>
           <Routes>
             <Route path="/library" element={<Login />} />
             <Route path="/login" element={<Login />} />
