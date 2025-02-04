@@ -40,14 +40,13 @@ const Register = () => {
 
     return (
         <div
-            className="container d-flex justify-content-center align-items-center min-vh-100"
+            className="container d-flex justify-content-center align-items-center min-vh-100 min-vw-100"
             style={{
-                backgroundImage: `url('https://wallpapercave.com/wp/ijo8KeK.jpg')`,
-                backgroundSize: "cover", // Ensures the image covers the full screen
-                backgroundPosition: "center", // Keeps the image centered
-                backgroundAttachment: "fixed", // Ensures the background stays fixed while scrolling
-                backgroundRepeat: "no-repeat", // Prevents tiling the image
-                height: "100vh", // Full viewport height
+                top: 0,
+                width: "100%",
+                height: "100%",
+                background: "linear-gradient(135deg, #4a90e2, #50e3c2, #9013fe, #ff0080)",
+                zIndex: -1,
             }}
         >
             <div

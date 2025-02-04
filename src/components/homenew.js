@@ -2,8 +2,7 @@ import React from "react";
 
 function PopularBooks() {
     return (
-        <div className="popularbooks-container">
-            <h className="popularbooks-title">Popular Books</h>
+        <div className="popularbooks">
             <div className="popularbooks">
                 <div className="popularbook-images">
                     <img
