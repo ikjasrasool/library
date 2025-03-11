@@ -107,91 +107,206 @@ const LoginWithBarcode = () => {
         }
     };
 
-    const staticBackgroundStyle = {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "linear-gradient(135deg, #4a90e2, #50e3c2, #9013fe, #ff0080)",
-        zIndex: -1,
-    };
-
-    const cardContentStyle = {
-        width: "100%",
-        height: "300px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        border: "2px solid #ccc",
-        borderRadius: "5px",
-        overflow: "hidden",
-    };
-
     return (
-        <div className="container d-flex justify-content-center align-items-center min-vh-100">
-            <div style={staticBackgroundStyle}></div>
+        <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center">
+            {/* Library-themed Background */}
+            <div
+                className="position-fixed top-0 start-0 w-100 h-100"
+                style={{
+                    background: "linear-gradient(rgba(30, 50, 70, 0.8), rgba(30, 50, 70, 0.9)), url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    zIndex: -1
+                }}
+            ></div>
 
-            <div className="card shadow-lg p-4" style={{ maxWidth: "900px", width: "100%", borderRadius: "10px" }}>
-                <div className="row">
-                    <div className="col-md-6 d-flex flex-column align-items-center">
-                        <h2 className="text-center mb-4">Login</h2>
-                        <form onSubmit={handleLogin} style={{ width: "100%" }}>
-                            <div className="mb-3">
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                                {loading ? "Loading..." : "Login"}
-                            </button>
-                            {error && <p className="text-danger mt-3 text-center">{error}</p>}
-                        </form>
-                        <button
-                            onClick={() => setIsScanning((prev) => !prev)}
-                            className="btn btn-info w-100 mt-3"
-                        >
-                            {isScanning ? "Stop Scanning" : "Start Scanning"}
-                        </button>
-                        <p className="mt-3 text-center">
-                            Don't have an account?{" "}
-                            <button className="btn btn-link" onClick={() => navigate("/register")}>
-                                Register here
-                            </button>
-                        </p>
-                    </div>
+            <div className="container">
+                <div className="row justify-content-center">
+                    <div className="col-lg-10">
+                        <div className="card shadow-lg border-0 overflow-hidden"
+                            style={{
+                                borderRadius: "16px",
+                                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                backdropFilter: "blur(10px)"
+                            }}>
+                            <div className="row g-0 h-100">
+                                {/* Left Side - Library Image or Scanner */}
+                                <div className="col-md-6 d-none d-md-block position-relative p-0">
+                                    <div
+                                        className="h-100 w-100 position-relative"
+                                        style={{
+                                            borderRadius: "16px 0 0 16px",
+                                            overflow: "hidden"
+                                        }}
+                                    >
+                                        {isScanning ? (
+                                            <div
+                                                id="barcode-scanner"
+                                                ref={scannerRef}
+                                                className="position-relative w-100 h-100 d-flex justify-content-center align-items-center"
+                                                style={{
+                                                    zIndex: 2,
+                                                    backgroundColor: "#1a2530"
+                                                }}
+                                            >
+                                                <div className="text-center text-white position-absolute top-0 mt-4">
+                                                    <i className="bi bi-qr-code-scan fs-1 mb-2"></i>
+                                                    <h3>Scanning ID Card</h3>
+                                                    <p>Please position your ID card's barcode in the frame</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <img
+                                                    src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                                                    alt="Library shelves"
+                                                    className="h-100 w-100"
+                                                    style={{
+                                                        objectFit: "cover",
+                                                        position: "absolute",
+                                                        top: 0,
+                                                        left: 0
+                                                    }}
+                                                />
+                                                <div
+                                                    className="position-absolute top-0 left-0 w-100 h-100"
+                                                    style={{
+                                                        background: "linear-gradient(135deg, rgba(76, 57, 38, 0.7), rgba(36, 62, 99, 0.8))",
+                                                        zIndex: 1
+                                                    }}
+                                                ></div>
+                                                <div className="position-absolute w-100 text-center text-white p-4"
+                                                    style={{
+                                                        bottom: 0,
+                                                        zIndex: 2,
+                                                        background: "linear-gradient(transparent, rgba(0,0,0,0.7))"
+                                                    }}>
+                                                    <div className="d-flex align-items-center justify-content-center mb-2">
+                                                        <i className="bi bi-book-half fs-3 me-2"></i>
+                                                        <h1 className="display-6 mb-0">LibraSync</h1>
+                                                    </div>
+                                                    <p className="mb-0">Your digital library management system</p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
 
-                    <div className="col-md-6 d-flex justify-content-center align-items-center">
-                        <div style={cardContentStyle}>
-                            {isScanning ? (
-                                <div
-                                    id="barcode-scanner"
-                                    ref={scannerRef}
-                                    style={{ width: "100%", height: "100%" }}
-                                ></div>
-                            ) : (
-                                <img
-                                    src="https://media.istockphoto.com/id/1498878143/photo/book-stack-and-open-book-on-the-desk-in-modern-public-library.jpg?s=612x612&w=0&k=20&c=vRcxdgfHSFJkow6DNPtaL9DT_ttdMGWel-qRLEzkQEI="
-                                    alt="Login Illustration"
-                                    className="img-fluid"
-                                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                                />
-                            )}
+                                {/* Right Side - Login Form */}
+                                <div className="col-md-6">
+                                    <div className="card-body p-4 p-lg-5">
+                                        <div className="text-center mb-4">
+                                            <div className="d-flex align-items-center justify-content-center mb-2">
+                                                <i className="bi bi-book-half fs-3 me-2 text-primary"></i>
+                                                <h2 className="fw-bold mb-0">Welcome Back</h2>
+                                            </div>
+                                            <p className="text-muted">Sign in to access your account</p>
+                                        </div>
+
+                                        <form onSubmit={handleLogin}>
+                                            <div className="mb-4">
+                                                <div className="input-group">
+                                                    <span className="input-group-text bg-light border-end-0">
+                                                        <i className="bi bi-person text-muted"></i>
+                                                    </span>
+                                                    <input
+                                                        type="email"
+                                                        className="form-control border-start-0 bg-light"
+                                                        placeholder="Email Address"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <div className="input-group">
+                                                    <span className="input-group-text bg-light border-end-0">
+                                                        <i className="bi bi-lock text-muted"></i>
+                                                    </span>
+                                                    <input
+                                                        type="password"
+                                                        className="form-control border-start-0 bg-light"
+                                                        placeholder="Password"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary w-100 py-2 mb-3"
+                                                disabled={loading}
+                                                style={{
+                                                    backgroundColor: "#2C3E50",
+                                                    borderColor: "#2C3E50",
+                                                    transition: "all 0.3s"
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.currentTarget.style.backgroundColor = "#1a2530";
+                                                    e.currentTarget.style.borderColor = "#1a2530";
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.currentTarget.style.backgroundColor = "#2C3E50";
+                                                    e.currentTarget.style.borderColor = "#2C3E50";
+                                                }}
+                                            >
+                                                {loading ? (
+                                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                ) : (
+                                                    <><i className="bi bi-box-arrow-in-right me-2"></i>Sign In</>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsScanning((prev) => !prev)}
+                                                className="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center"
+                                                style={{
+                                                    transition: "all 0.3s"
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.currentTarget.style.backgroundColor = "#f8f9fa";
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.currentTarget.style.backgroundColor = "";
+                                                }}
+                                            >
+                                                <i className={`bi ${isScanning ? "bi-x-circle" : "bi-qr-code-scan"} me-2`}></i>
+                                                {isScanning ? "Stop ID Card Scan" : "Scan ID Card"}
+                                            </button>
+
+                                            {error && (
+                                                <div className="alert alert-danger mt-3 text-center" role="alert">
+                                                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                                                    {error}
+                                                </div>
+                                            )}
+                                        </form>
+
+                                        <div className="text-center mt-4">
+                                            <p className="mb-0 text-muted">
+                                                Don't have an account?{" "}
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-link p-0 text-decoration-none"
+                                                    onClick={() => navigate("/register")}
+                                                >
+                                                    <i className="bi bi-person-plus me-1"></i>
+                                                    Register
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="text-center mt-3 text-white">
+                            <small>&copy; {new Date().getFullYear()} LibraSync. All rights reserved.</small>
                         </div>
                     </div>
                 </div>

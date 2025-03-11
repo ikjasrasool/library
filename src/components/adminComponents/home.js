@@ -115,7 +115,7 @@ const Home = () => {
                         </div>
                     ) : (
                         filteredBooks.map(book => (
-                            <div className="col-md-4 mb-4" key={book.id}>
+                            <div className="col-md-2 mb-4" key={book.id}>
                                 <div className="card h-100 shadow-sm" onDoubleClick={() => handleDoubleClick(book)}>
                                     <img src={book.photoURL} className="card-img-top fixed-img" alt={book.title} />
                                     <div className="card-body d-flex flex-column">

@@ -15,7 +15,6 @@ import Profile from "./components/userComponenets/profile";
 import SruBookDetail from "./components/userComponenets/stuBookDetail";
 import NewHome from "./components/homenew";
 import Preloader from "../src/components/Pre";
-import ScrollToTop from "./components/ScrollToTop";
 import "./style.css";
 function App() {
   const [load, upadateLoad] = useState(true);
@@ -31,7 +30,7 @@ function App() {
       <Router>
         <Preloader load={load} />
         <div className="App" id={load ? "no-scroll" : "scroll"}>
-          <ScrollToTop />
+
           <Routes>
             <Route path="/library" element={<Login />} />
             <Route path="/login" element={<Login />} />

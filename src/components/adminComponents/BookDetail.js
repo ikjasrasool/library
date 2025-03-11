@@ -54,42 +54,66 @@ const BookDetail = () => {
     };
 
     if (loading) {
-        return <div className="text-center">Loading...</div>; // Show loading state while fetching
+        return <div className="text-center py-5">Loading...</div>; // Show loading state while fetching
     }
 
     return (
-        <div className="container my-4">
+        <div className="container my-5">
             <div className="row">
-                <div className="col-md-6">
-                    <img src={book.photoURL} className="img-fluid" alt={book.title} />
+                {/* Book Cover Section */}
+                <div className="col-md-4 text-center">
+                    <img
+                        src={book.photoURL}
+                        className="img-fluid rounded shadow-lg"
+                        alt={book.title}
+                        style={{ maxHeight: '500px', width: 'auto' }}
+                    />
                 </div>
-                <div className="col-md-6">
-                    <h1>{book.title}</h1>
-                    <h5>Author: {book.author}</h5>
-                    <p><strong>Genre:</strong> {book.genre}</p>
-                    <p><strong>Description:</strong> {book.description}</p>
-                    <p><strong>Status:</strong> {book.status}</p>
-                    <p><strong>Number of Books Available:</strong> {book.noOfBooks}</p>
-                    <p><strong>Location:</strong> {book.location}</p>
-                    <p><strong>Average Rating:</strong> {renderStars(averageRating)} ({averageRating})</p> {/* Displaying the average rating */}
-                    <div className="d-flex justify-content-between align-items-center">
-                        <Link to="/home" className="btn btn-secondary">Back to Home</Link>
-                        <Link to={`/update/${book.id}`} className="btn btn-primary">Update</Link>
+
+                {/* Book Details Section */}
+                <div className="col-md-8">
+                    <h1 className="display-4">{book.title}</h1>
+                    <h5 className="text-muted">By {book.author}</h5>
+                    <div className="my-4">
+                        <span className="badge bg-primary me-2">{book.genre}</span>
+                        <span className="badge bg-success">{book.status}</span>
+                    </div>
+                    <p className="lead">{book.description}</p>
+                    <div className="my-4">
+                        <p><strong>Number of Books Available:</strong> {book.noOfBooks}</p>
+                        <p><strong>Location:</strong> {book.location}</p>
+                        <p><strong>Average Rating:</strong> {renderStars(averageRating)} ({averageRating}/5)</p>
+                    </div>
+                    <div className="d-flex gap-3">
+                        <Link to="/home" className="btn btn-outline-secondary">
+                            <i className="fas fa-arrow-left me-2"></i>Back to Home
+                        </Link>
+                        <Link to={`/update/${book.id}`} className="btn btn-primary">
+                            <i className="fas fa-edit me-2"></i>Update Book
+                        </Link>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-4">
-                <h4>Customer Reviews</h4>
+            {/* Reviews Section */}
+            <div className="mt-5">
+                <h3 className="mb-4">Customer Reviews</h3>
                 {reviews.length > 0 ? (
                     reviews.map(review => (
-                        <div key={review.id} className="border p-2 my-2">
-                            <p><strong>{review.userName}</strong> {renderStars(review.rating)}</p>
-                            <p>{review.comment}</p>
+                        <div key={review.id} className="card mb-3">
+                            <div className="card-body">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 className="card-title mb-0">{review.userName}</h5>
+                                    <span className="text-warning">{renderStars(review.rating)}</span>
+                                </div>
+                                <p className="card-text">{review.comment}</p>
+                            </div>
                         </div>
                     ))
                 ) : (
-                    <p>No reviews yet. Be the first to review this book!</p>
+                    <div className="alert alert-info" role="alert">
+                        No reviews yet. Be the first to review this book!
+                    </div>
                 )}
             </div>
         </div>
