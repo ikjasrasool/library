@@ -4,7 +4,7 @@
 LibraSync is a Library Management System designed to streamline the process of borrowing, returning, and managing books in a library. The system includes QR code scanning to verify user roll numbers and ensures efficient tracking of books.
 
 ## Features
-- **Book Borrowing:** Users can borrow books based on availability.
+- **Book Borrowing:** Users can Borrow books based on availability of books in the library
 - **Book Returning:** Allows users to return borrowed books and update records.
 - **Loan Extension:** Users can request extensions for their borrowed books.
 - **QR Code Scanning:** Verifies user roll numbers for authentication.
